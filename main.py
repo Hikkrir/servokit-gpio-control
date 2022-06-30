@@ -130,7 +130,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.speed_spin_box.setValue(speed_value)
         if speed_value < 0:
             controller.move_backward(abs(speed_value))
-        controller.move_forward(speed_value)
+        controller.move_forward(abs(speed_value))
     
 if __name__ == "__main__":
     controller = Control()
