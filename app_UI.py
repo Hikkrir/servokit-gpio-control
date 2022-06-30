@@ -31,16 +31,19 @@ class RecordVideoThread(QtCore.QThread):
     def run(self):
         if self.active:            
             self.fourcc = cv2.VideoWriter_fourcc(*'XVID') 
-            self.out1 = cv2.VideoWriter('output_video.avi', self.fourcc, 30, (640,480))
+            self.out1 = cv2.VideoWriter('output_video.avi', self.fourcc, 15, (640, 480))
             self.cap1 = cv2.VideoCapture(0, cv2.CAP_DSHOW)
             self.cap1.set(3, 480)
             self.cap1.set(4, 640)
             self.cap1.set(5, 30)
+            i = 0
             while self.active:                      
                 ret1, image1 = self.cap1.read()
                 if ret1:
-                    self.out1.write(image1)     
-                self.msleep(10)                      
+                    self.out1.write(image1) 
+                    cv2.imwrite("D:\servokit-gpio-control\dataframe\\frame_" + str(i) + ".jpg", image1)
+                    i+=1    
+                self.msleep(10)                    
 
     def stop(self):
         self.out1.release()
