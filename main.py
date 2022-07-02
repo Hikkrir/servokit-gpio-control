@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import QtCore
 from app_UI import Ui_MainWindow
-# from control import Control
+from control import Control
 
 """
 Слайдер и спин-бокс взаимосвязанны:
@@ -122,19 +122,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.speed_slider.setSliderPosition(self.DEFAULT_SPEED_SLIDER_POS)
 
     def changed_servo_angle_event(self, angle_value):
-        # controller.change_angle_servo(angle_value)
+        controller.change_angle_servo(angle_value)
         self.label.setText(f"Угол сервопривода -- {angle_value}°")
         self.servo_angle_spin_box.setValue(angle_value)
 
     def changed_speed_event(self, speed_value):
         self.label_2.setText(f"Скорость двигателя -- {speed_value}")
         self.speed_spin_box.setValue(speed_value)
-        # if speed_value < 0:
-        #     controller.move_backward(abs(speed_value))
-        # controller.move_forward(abs(speed_value))
+        if speed_value < 0:
+            controller.move_backward(abs(speed_value))
+        controller.move_forward(abs(speed_value))
 
 if __name__ == "__main__":
-    # controller = Control()
+    controller = Control()
     app = QApplication(sys.argv)
     demo = MainWindow()
     demo.show()
