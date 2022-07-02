@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtCore import Qt
+from PyQt5 import QtCore
 from app_UI import Ui_MainWindow
 # from control import Control
 
@@ -26,11 +26,11 @@ from app_UI import Ui_MainWindow
 
 ESC для выхода и закрытия программы
 """
-
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+
         self.SERVO_SLIDER_MAX_VALUE = 160
         self.SERVO_SLIDER_MIN_VALUE = 75
         self.SERVO_SLIDER_SINGLE_STEP_VALUE = 2
@@ -76,6 +76,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.speed_slider.setSliderPosition(self.DEFAULT_SPEED_SLIDER_POS)
         self.servo_angle_spin_box.setValue(self.DEFAULT_SERVO_SLIDER_POS)
         self.servo_angle_slider.setSliderPosition(self.DEFAULT_SERVO_SLIDER_POS)
+        self.servo_angle_slider.valueChanged.connect(lambda: self.get_action())         
 
     def keyPressEvent(self, event):
         """
@@ -87,19 +88,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             направление движения вперед и назад
         """
         key = event.key()
-        if key == Qt.Key.Key_A and not event.isAutoRepeat():
+        if key == QtCore.Qt.Key.Key_A and not event.isAutoRepeat():
             self.changed_servo_angle_event(self.servo_angle_slider.value() - self.LEFT_OFFSET)
 
-        if key == Qt.Key.Key_D and not event.isAutoRepeat():
+        if key == QtCore.Qt.Key.Key_D and not event.isAutoRepeat():
             self.changed_servo_angle_event(self.servo_angle_slider.value() + self.RIGHT_OFFSET)
 
-        if key == Qt.Key.Key_W and not event.isAutoRepeat():
+        if key == QtCore.Qt.Key.Key_W and not event.isAutoRepeat():
             self.changed_speed_event(self.FORWARD_OFFSET)
 
-        if key == Qt.Key.Key_S and not event.isAutoRepeat():
+        if key == QtCore.Qt.Key.Key_S and not event.isAutoRepeat():
             self.changed_speed_event(self.BACKWARD_OFFSET)
 
-        elif key == Qt.Key.Key_Escape:
+        elif key == QtCore.Qt.Key.Key_Escape:
             self.close()
 
     def keyReleaseEvent(self, event):
@@ -108,16 +109,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         если клавиша была отпущена - вернуть дефолтные положения слайдеров и спинбоксов
         """
         key = event.key()
-        if key == Qt.Key.Key_A and not event.isAutoRepeat():
+        if key == QtCore.Qt.Key.Key_A and not event.isAutoRepeat():
             self.servo_angle_slider.setSliderPosition(self.DEFAULT_SERVO_SLIDER_POS)
 
-        if key == Qt.Key.Key_D and not event.isAutoRepeat():
+        if key == QtCore.Qt.Key.Key_D and not event.isAutoRepeat():
             self.servo_angle_slider.setSliderPosition(self.DEFAULT_SERVO_SLIDER_POS)
 
-        if key == Qt.Key.Key_W and not event.isAutoRepeat():
+        if key == QtCore.Qt.Key.Key_W and not event.isAutoRepeat():
             self.speed_slider.setSliderPosition(self.DEFAULT_SPEED_SLIDER_POS)
 
-        if key == Qt.Key.Key_S and not event.isAutoRepeat():
+        if key == QtCore.Qt.Key.Key_S and not event.isAutoRepeat():
             self.speed_slider.setSliderPosition(self.DEFAULT_SPEED_SLIDER_POS)
 
     def changed_servo_angle_event(self, angle_value):
@@ -131,7 +132,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # if speed_value < 0:
         #     controller.move_backward(abs(speed_value))
         # controller.move_forward(abs(speed_value))
-    
+
 if __name__ == "__main__":
     # controller = Control()
     app = QApplication(sys.argv)

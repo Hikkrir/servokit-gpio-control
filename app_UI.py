@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, QtTest
 import cv2
+import pathlib
+import csv
 
 class VideoStreamThread(QtCore.QThread):
     changePixmap = QtCore.pyqtSignal(QtGui.QImage)
     
     def __init__(self, *args, **kwargs):
         super().__init__()
+        pathlib.Path('..\servokit-gpio-control\dataframe').mkdir(parents=True, exist_ok=True)
 
     def run(self):
         self.cap1 = cv2.VideoCapture(0, cv2.CAP_DSHOW)
@@ -27,21 +30,34 @@ class RecordVideoThread(QtCore.QThread):
     def __init__(self, *args, **kwargs):
         super().__init__()
         self.active = True
+        self.turn_release = "middle"
+        self.movement_release = "stop"
 
     def run(self):
         if self.active:            
             self.fourcc = cv2.VideoWriter_fourcc(*'XVID') 
-            self.out1 = cv2.VideoWriter('output_video.avi', self.fourcc, 15, (640, 480))
+            self.out1 = cv2.VideoWriter('output_video.avi', self.fourcc, 20, (640, 480))
             self.cap1 = cv2.VideoCapture(0, cv2.CAP_DSHOW)
             self.cap1.set(3, 480)
             self.cap1.set(4, 640)
             self.cap1.set(5, 30)
+            with open("dataset.csv", "w") as csvfile: 
+                    writer = csv.writer(csvfile)
+                    writer.writerow(
+                        ("frame", "turn", "movement"),
+                    )
             i = 0
+            pathlib.Path('..\servokit-gpio-control\dataframe').mkdir(parents=True, exist_ok=True)
             while self.active:                      
                 ret1, image1 = self.cap1.read()
                 if ret1:
-                    self.out1.write(image1) 
-                    cv2.imwrite("D:\servokit-gpio-control\dataframe\\frame_" + str(i) + ".jpg", image1)
+                    self.out1.write(image1)
+                    cv2.imwrite("..\servokit-gpio-control\dataframe\\frame_" + str(i) + ".jpg", image1)
+                    with open("dataset.csv", "a") as csvfile: 
+                        writer = csv.writer(csvfile)
+                        writer.writerow(
+                            [f"frame_{i}", self.turn_release, self.movement_release],
+                        )            
                     i+=1    
                 self.msleep(10)                    
 
@@ -54,6 +70,8 @@ class Ui_MainWindow(object):
         MainWindow.resize(803, 600)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+        self.record_thread_is_active = False
+        self.action = "middle"
 
         self.servo_angle_slider = QtWidgets.QSlider(self.centralwidget)
         self.servo_angle_slider.setGeometry(QtCore.QRect(20, 460, 500, 22))
@@ -167,16 +185,37 @@ class Ui_MainWindow(object):
     def setImage(self, qImg1):
         self.camera_box_label.setPixmap(QtGui.QPixmap.fromImage(qImg1))
 
+    def get_action(self):
+        if self.servo_angle_slider.value() > 110:
+            self.th2.turn_release = "right"
+
+        if self.servo_angle_slider.value() < 110:
+            self.th2.turn_release = "left"
+
+        if self.servo_angle_slider.value() == 110:
+            self.th2.turn_release = "middle"
+
+        if self.speed_slider.value() > 0:
+            self.th2.movement_release = "forward"
+
+        if self.speed_slider.value() < 0:
+            self.th2.movement_release = "backward"
+
+        if self.speed_slider.value() == 0:
+            self.th2.movement_release = "stop"
+        
+
     def controlTimer(self):
         if not self.saveTimer.isActive():
             self.saveTimer.start()
             self.th2 = RecordVideoThread(self)
-            self.th2.active = True                                
+            self.th2.active = True                          
             self.th2.start()
+
             self.control_bt.setText("Остановить запись")
         else:
             self.saveTimer.stop()
-            self.th2.active = False                   
+            self.th2.active = False               
             self.th2.stop()                         
             self.th2.terminate()                    
             self.control_bt.setText("Начать запись")
