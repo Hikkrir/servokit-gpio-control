@@ -211,7 +211,6 @@ class Ui_MainWindow(object):
             self.th2 = RecordVideoThread(self)
             self.th2.active = True                          
             self.th2.start()
-
             self.control_bt.setText("Остановить запись")
         else:
             self.saveTimer.stop()
